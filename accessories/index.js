@@ -1,6 +1,7 @@
 const AirCon = require('./aircon');
 const LearnCode = require('./learnCode');
 const Outlet = require('./outlet');
+const Speaker = require('./speaker');
 const Switch = require('./switch');
 const SwitchMulti = require('./switchMulti');
 const SwitchMultiRepeat = require('./switchMultiRepeat');
@@ -14,6 +15,7 @@ const WindowCovering = require('./windowCovering');
 module.exports = {
   AirCon,
   LearnCode,
+  Speaker,
   Switch,
   SwitchMulti,
   SwitchMultiRepeat,

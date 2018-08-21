@@ -13,7 +13,8 @@ class FanAccessory extends SwitchAccessory {
   }
 
   async setFanSpeed (hexData) {
-    const { data, host, log, state, name, debug} = this;
+    const { data, host, log, state, name, debug, config } = this;
+    const { toggleSpeed, defaultToggleSpeed } = config;
 
     this.reset();
 
@@ -42,12 +43,33 @@ class FanAccessory extends SwitchAccessory {
       return;
     }
 
+    // If the toggleSpeed mode is activated, we first send the toggle command X times based on the current state
+    if (toggleSpeed) {
+      // Set to default if unknown
+      if (!this.lastFanSpeed) {
+        this.lastFanSpeed = foundSpeeds[defaultToggleSpeed];
+      }
+
+      const lastFanSpeedIndex = foundSpeeds.findIndex(speed => speed == this.lastFanSpeed);
+      const currentFanSpeedIndex = foundSpeeds.findIndex(speed => speed == closest);
+      const indexDiff = currentFanSpeedIndex -  lastFanSpeedIndex;
+      const sendTimes = indexDiff < 0 ? foundSpeeds.length + indexDiff : indexDiff;
+
+      hexData = data['toggleFanSpeed'];
+      log(`${name} setFanSpeedToggle: (foundSpeeds: ${foundSpeeds}, lastFanSpeed: ${this.lastFanSpeed}, last: ${lastFanSpeedIndex}, current: ${currentFanSpeedIndex}, indexDiff: ${indexDiff}, sendTimes: ${sendTimes})`);
+      await this.performSend([{
+        data: hexData,
+        sendCount: sendTimes,
+        interval: 0.4
+      }]);
+    } else {
+      // Get the closest speed's hex data
+      hexData = data[`fanSpeed${closest}`];
+
+      await this.performSend(hexData);
+    }
+
     this.lastFanSpeed = closest;
-
-    // Get the closest speed's hex data
-    hexData = data[`fanSpeed${closest}`];
-
-    await this.performSend(hexData);
 
     this.checkAutoOnOff();
   }
